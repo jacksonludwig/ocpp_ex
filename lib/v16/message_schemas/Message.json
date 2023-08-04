@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "OCPPMessage",
+  "type": "object",
+  "oneOf": [
+    {
+      "title": "ResponseError",
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": [
+        { "enum": [4] },
+        { "type": "string" },
+        { "type": "string" },
+        { "type": "string" },
+        { "type": "object" }
+      ]
+    },
+    {
+      "title": "Request",
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": [
+        { "enum": [2] },
+        { "type": "string" },
+        { "type": "string" },
+        { "type": "object" }
+      ]
+    },
+    {
+      "title": "Response",
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": [
+        { "enum": [3] },
+        { "type": "string" },
+        { "type": "string" },
+        { "type": "object" }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-defmodule MessageParsing.OCPPmessage do
+defmodule MessageParsing.OCPPMessage do
   @moduledoc """
   Regular OCPP message struct.
   """

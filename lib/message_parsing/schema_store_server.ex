@@ -15,8 +15,9 @@ defmodule MessageParsing.SchemaStoreServer do
 
   ex: {"BootNotification, 2"} -> schema for boot request
   ex: {"BootNotification, 3"} -> schema for boot response
+  ex: {"v16", -1} -> schema for v16 message format itself
   """
-  @spec set({String.t(), 2 | 3 | 4}, term()) :: term
+  @spec set({String.t(), 2 | 3 | 4 | -1}, term()) :: term
   def set({action, message_type}, schema) do
     GenServer.call(__MODULE__, {:set, {action, message_type}, schema})
   end
@@ -24,7 +25,7 @@ defmodule MessageParsing.SchemaStoreServer do
   @doc """
   Get a schema object using the given action.
   """
-  @spec get({String.t(), 2 | 3 | 4}) :: term
+  @spec get({String.t(), 2 | 3 | 4 | -1}) :: term
   def get({action, message_type}) do
     GenServer.call(__MODULE__, {:get, {action, message_type}})
   end
