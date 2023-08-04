@@ -4,7 +4,7 @@ defmodule MessageParsing.SchemaReader do
   """
   alias MessageParsing.{SchemaValidation, JSONParser, SchemaStoreServer}
 
-  defp get_schema_path(protocol), do: "#{File.cwd!()}/lib/#{protocol}/schemas/"
+  defp get_schema_path(protocol), do: "#{File.cwd!()}/lib/#{protocol}/schemas"
 
   defp read_schema(protocol, action, 2) do
     File.read("#{get_schema_path(protocol)}/#{action}.json")
