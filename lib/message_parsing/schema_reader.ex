@@ -4,16 +4,18 @@ defmodule MessageParsing.SchemaReader do
   """
   alias MessageParsing.{SchemaValidation, JSONParser, SchemaStoreServer}
 
+  defp get_schema_path(protocol), do: "#{File.cwd!()}/lib/#{protocol}/schemas/"
+
   defp read_schema(protocol, action, 2) do
-    File.read("#{File.cwd!}/lib/#{protocol}/schemas/#{action}.json")
+    File.read("#{get_schema_path(protocol)}/#{action}.json")
   end
 
   defp read_schema(protocol, action, 3) do
-    File.read("#{File.cwd!}/lib/#{protocol}/schemas/#{action}Response.json")
+    File.read("#{get_schema_path(protocol)}/#{action}Response.json")
   end
 
   defp read_schema(protocol, _, 4) do
-    File.read("#{File.cwd!}/lib/#{protocol}/schemas/ErrorResponse.json")
+    File.read("#{get_schema_path(protocol)}/ErrorResponse.json")
   end
 
   # TODO: handle error cases when reading or decoding schema
@@ -25,8 +27,8 @@ defmodule MessageParsing.SchemaReader do
   ex - get_schema("v16", "BootNotification", 2) returns the schema for the BootNotification
   request payload.
   """
-  @spec get_schema({String.t(), String.t(), 2 | 3 | 4}) :: term()
-  def get_schema({protocol, action, type_id}) do
+  @spec get_schema(String.t(), String.t(), 2 | 3 | 4) :: term()
+  def get_schema(protocol, action, type_id) do
     case SchemaStoreServer.get({action, type_id}) do
       nil ->
         {:ok, data} = read_schema(protocol, action, type_id)

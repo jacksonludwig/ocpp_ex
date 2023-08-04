@@ -4,22 +4,19 @@ defmodule MessageParsing.Validator do
   """
   alias MessageParsing.{OCPPErrorMessage, OCPPmessage, SchemaReader, SchemaValidation}
 
-  defguard is_OCCP_message(val)
-           when is_struct(val, OCPPmessage) or is_struct(val, OCPPErrorMessage)
-
   @doc """
   Validate an OCPP message struct.
   """
-  @spec validate(String.t(), struct()) :: :ok | {:error, [term()]}
-  def validate(protocol, input = %OCPPmessage{}) do
-    {protocol, input.action, input.type_id}
-    |> SchemaReader.get_schema()
+  @spec validate_payload(String.t(), struct()) :: :ok | {:error, [term()]}
+  def validate_payload(protocol, input = %OCPPmessage{}) do
+    protocol
+    |> SchemaReader.get_schema(input.action, input.type_id)
     |> SchemaValidation.validate_schema(input.payload)
   end
 
-  def validate(protocol, input = %OCPPErrorMessage{}) do
-    {protocol, "_Error", 4}
-    |> SchemaReader.get_schema()
+  def validate_payload(protocol, input = %OCPPErrorMessage{}) do
+    protocol
+    |> SchemaReader.get_schema("_Error", 4)
     |> SchemaValidation.validate_schema(input.error_details)
   end
 end
