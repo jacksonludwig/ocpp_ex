@@ -2,12 +2,13 @@ defmodule MessageParsing.Validator do
   @moduledoc """
   Validates OCPP messages.
   """
-  alias MessageParsing.{OCPPErrorMessage, OCPPMessage, SchemaReader, SchemaValidation, JSONParser}
+  alias MessageParsing.{SchemaReader, SchemaValidation, JSONParser, OCPPMessage}
+  alias OCPPMessage.{RequestResponse, ErrorResponse}
 
   @doc """
   Parse a string into an OCPP message struct.
   """
-  @spec parse(String.t(), String.t()) :: {:ok, Utils.any_OCPP_message()} | Utils.error_tuple()
+  @spec parse(String.t(), String.t()) :: {:ok, OCPPMessage.any_OCPP_message()} | Utils.error_tuple()
   def parse(protocol, input) do
     with :ok <- validate_message_protocol(protocol),
          {:ok, decoded_input} <- JSONParser.decode(input),
@@ -42,14 +43,14 @@ defmodule MessageParsing.Validator do
   @doc """
   Validate the message action
   """
-  @spec validate_message_action(String.t(), Utils.any_OCPP_message()) :: :ok | Utils.error_tuple()
-  def validate_message_action(protocol, message = %OCPPMessage{}) do
+  @spec validate_message_action(String.t(), OCPPMessage.any_OCPP_message()) :: :ok | Utils.error_tuple()
+  def validate_message_action(protocol, message = %RequestResponse{}) do
     with {:ok, schema} <- SchemaReader.get_action_schema(protocol) do
       SchemaValidation.validate(schema, message.action)
     end
   end
 
-  def validate_message_action(_protocol, _ = %OCPPErrorMessage{}) do
+  def validate_message_action(_protocol, _ = %ErrorResponse{}) do
     :ok
   end
 
@@ -57,13 +58,13 @@ defmodule MessageParsing.Validator do
   Validate an OCPP message struct's payload.
   """
   @spec validate_payload(String.t(), struct()) :: :ok | Utils.error_tuple()
-  def validate_payload(protocol, input = %OCPPMessage{}) do
+  def validate_payload(protocol, input = %RequestResponse{}) do
     with {:ok, schema} <- SchemaReader.get_payload_schema(protocol, input.action, input.type_id) do
       SchemaValidation.validate(schema, input.payload)
     end
   end
 
-  def validate_payload(_, _ = %OCPPErrorMessage{}) do
+  def validate_payload(_, _ = %ErrorResponse{}) do
     :ok
   end
 
@@ -72,7 +73,7 @@ defmodule MessageParsing.Validator do
   """
   @spec validated_message_to_struct(term()) :: struct()
   def validated_message_to_struct([4, message_id, code, description, details]) do
-    %OCPPErrorMessage{
+    %ErrorResponse{
       error_code: code,
       error_description: description,
       error_details: details,
@@ -82,8 +83,8 @@ defmodule MessageParsing.Validator do
   end
 
   def validated_message_to_struct([type_id, message_id, action, payload])
-       when type_id == 3 or type_id == 2 do
-    %OCPPMessage{
+      when type_id == 3 or type_id == 2 do
+    %RequestResponse{
       type_id: type_id,
       message_id: message_id,
       action: action,

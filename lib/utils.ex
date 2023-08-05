@@ -2,8 +2,6 @@ defmodule Utils do
   @moduledoc """
   Util file hold some common types and functions.
   """
-  alias MessageParsing.{OCPPMessage, OCPPErrorMessage}
 
-  @type error_tuple :: {:error, atom(), term()}
-  @type any_OCPP_message :: OCPPMessage.t() | OCPPErrorMessage.t()
+  @type error_tuple :: {:error, error_reason :: atom(), error_details :: term()}
 end
