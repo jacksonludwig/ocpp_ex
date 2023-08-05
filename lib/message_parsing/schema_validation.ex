@@ -6,7 +6,7 @@ defmodule MessageParsing.SchemaValidation do
   @doc """
   Given a resolved schema and input, try to validate the input.
   """
-  @spec validate(struct(), map()) :: :ok | {:error, :validation_failed, term()}
+  @spec validate(struct(), term()) :: :ok | {:error, :validation_failed, term()}
   def validate(resolved_schema, map_data) do
     case ExJsonSchema.Validator.validate(resolved_schema, map_data) do
       :ok -> :ok

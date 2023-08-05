@@ -32,6 +32,13 @@ defmodule MessageParsing.SchemaReader do
     end
   end
 
+  defp read_schema(protocol) do
+    case File.read("#{get_schema_path(protocol)}/AllowedActions.json") do
+      {:ok, data} -> {:ok, data}
+      {:error, error} -> {:error, :schema_read_error, error}
+    end
+  end
+
   defp read_meta_schema(name) do
     case get_meta_schema_path(name) |> File.read() do
       {:ok, data} -> {:ok, data}
@@ -43,7 +50,7 @@ defmodule MessageParsing.SchemaReader do
   Retrieve the given meta schema. A meta schema is used to validate the structure
   of messages rather than message contents.
   """
-  @spec get_meta_schema(:message | :protocol_type) :: Utils.error_tuple() | {:ok, term()}
+  @spec get_meta_schema(:message | :protocol_type) :: {:ok, term()} | Utils.error_tuple()
   def get_meta_schema(schema_type) do
     meta_schema_store_key = {to_string(schema_type), -1}
 
@@ -66,7 +73,20 @@ defmodule MessageParsing.SchemaReader do
   """
   @spec get_action_schema(String.t()) :: {:ok, term()} | Utils.error_tuple()
   def get_action_schema(protocol) do
+    action_schema_store_key = {protocol, -1}
 
+    case SchemaStoreServer.get(action_schema_store_key) do
+      nil ->
+        with {:ok, data} <- read_schema(protocol),
+             {:ok, schema_obj} <- JSONParser.decode(data),
+             {:ok, resolved_schema} <- SchemaValidation.resolve_schema(schema_obj) do
+          SchemaStoreServer.set(action_schema_store_key, resolved_schema)
+          {:ok, resolved_schema}
+        end
+
+      resolved_schema ->
+        {:ok, resolved_schema}
+    end
   end
 
   @doc """

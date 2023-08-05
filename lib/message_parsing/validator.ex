@@ -13,9 +13,24 @@ defmodule MessageParsing.Validator do
          {:ok, decoded_input} <- JSONParser.decode(input),
          :ok <- validate_message_structure(decoded_input),
          ocpp_message when is_struct(ocpp_message) <- validated_message_to_struct(decoded_input),
+         :ok <- validate_message_action(protocol, ocpp_message),
          :ok <- validate_payload(protocol, ocpp_message) do
       {:ok, ocpp_message}
     end
+  end
+
+  @doc """
+  Validate the message action
+  """
+  @spec validate_message_action(String.t(), Utils.any_OCPP_message()) :: :ok | Utils.error_tuple()
+  def validate_message_action(protocol, message = %OCPPMessage{}) do
+    with {:ok, schema} <- SchemaReader.get_action_schema(protocol) do
+      SchemaValidation.validate(schema, message.action)
+    end
+  end
+
+  def validate_message_action(_protocol, _ = %OCPPErrorMessage{}) do
+    :ok
   end
 
   @doc """

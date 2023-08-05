@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "AllowedAction",
+  "type": "string",
+  "additionalProperties": false,
+  "enum": [
+    "Authorize",
+    "BootNotification",
+    "DataTransfer",
+    "FirmwareStatusNotification",
+    "DiagnosticsStatusNotification",
+    "Heartbeat",
+    "MeterValues",
+    "StartTransaction",
+    "StatusNotification",
+    "StopTransaction"
+  ]
+}

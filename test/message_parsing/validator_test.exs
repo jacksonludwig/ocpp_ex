@@ -55,7 +55,7 @@ defmodule MessageParsing.ValidatorTest do
   end
 
   test "should return error on unknown action" do
-    assert {:error, :unhandled_action, _} =
+    assert {:error, :validation_failed, _} =
              MessageParsing.Validator.parse(
                "v16",
                ~s([2, "123", "../../../", {}])
