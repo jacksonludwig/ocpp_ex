@@ -7,12 +7,16 @@
     "Authorize",
     "BootNotification",
     "DataTransfer",
-    "FirmwareStatusNotification",
     "DiagnosticsStatusNotification",
+    "FirmwareStatusNotification",
     "Heartbeat",
     "MeterValues",
     "StartTransaction",
     "StatusNotification",
-    "StopTransaction"
+    "StopTransaction",
+
+    "TriggerMessage",
+    "RemoteStartTransaction",
+    "RemoteStopTransaction"
   ]
 }
