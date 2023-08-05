@@ -2,7 +2,7 @@ defmodule MessageParsing.SchemaReader do
   @moduledoc """
   Retrieves schemas from disk and caches them.
   """
-  alias MessageParsing.{SchemaValidation, JSONParser, SchemaStoreServer}
+  alias MessageParsing.{SchemaValidation, JSONParser, SchemaStore}
 
   # TODO: handle file traversal attacks?
 
@@ -54,12 +54,12 @@ defmodule MessageParsing.SchemaReader do
   def get_meta_schema(schema_type) do
     meta_schema_store_key = {to_string(schema_type), -1}
 
-    case SchemaStoreServer.get(meta_schema_store_key) do
+    case SchemaStore.get(meta_schema_store_key) do
       nil ->
         with {:ok, data} <- read_meta_schema(schema_type),
              {:ok, schema_obj} <- JSONParser.decode(data),
              {:ok, resolved_schema} <- SchemaValidation.resolve_schema(schema_obj) do
-          SchemaStoreServer.set(meta_schema_store_key, resolved_schema)
+          SchemaStore.set(meta_schema_store_key, resolved_schema)
           {:ok, resolved_schema}
         end
 
@@ -75,12 +75,12 @@ defmodule MessageParsing.SchemaReader do
   def get_action_schema(protocol) do
     action_schema_store_key = {protocol, -1}
 
-    case SchemaStoreServer.get(action_schema_store_key) do
+    case SchemaStore.get(action_schema_store_key) do
       nil ->
         with {:ok, data} <- read_schema(protocol),
              {:ok, schema_obj} <- JSONParser.decode(data),
              {:ok, resolved_schema} <- SchemaValidation.resolve_schema(schema_obj) do
-          SchemaStoreServer.set(action_schema_store_key, resolved_schema)
+          SchemaStore.set(action_schema_store_key, resolved_schema)
           {:ok, resolved_schema}
         end
 
@@ -94,12 +94,12 @@ defmodule MessageParsing.SchemaReader do
   """
   @spec get_payload_schema(String.t(), String.t(), 2 | 3) :: {:ok, term()} | Utils.error_tuple()
   def get_payload_schema(protocol, action, type_id) do
-    case SchemaStoreServer.get({action, type_id}) do
+    case SchemaStore.get({action, type_id}) do
       nil ->
         with {:ok, data} <- read_schema(protocol, action, type_id),
              {:ok, schema_obj} <- JSONParser.decode(data),
              {:ok, resolved_schema} <- SchemaValidation.resolve_schema(schema_obj) do
-          SchemaStoreServer.set({action, type_id}, resolved_schema)
+          SchemaStore.set({action, type_id}, resolved_schema)
           {:ok, resolved_schema}
         end
 

@@ -1,4 +1,4 @@
-defmodule MessageParsing.SchemaStoreServer do
+defmodule MessageParsing.SchemaStore do
   @moduledoc """
   Maintains a map of an OCPP action to its schema.
   """

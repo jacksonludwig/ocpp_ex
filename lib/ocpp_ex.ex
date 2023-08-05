@@ -4,8 +4,8 @@ defmodule OcppEx do
   @impl true
   def start(_type, _args) do
     children = [
-      MessageParsing.SchemaStoreServer,
       MessageHandling.ResponseQueue,
+      MessageParsing.SchemaStore
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one, name: OcppEx.Supervisor)
