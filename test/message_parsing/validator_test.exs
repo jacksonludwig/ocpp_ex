@@ -47,7 +47,7 @@ defmodule MessageParsing.ValidatorTest do
   end
 
   test "should return error on unknown protocol" do
-    assert {:error, :schema_read_error, _} =
+    assert {:error, :validation_failed, _} =
              MessageParsing.Validator.parse(
                "vfake",
                ~s([4, "123", "UnknownMessageType", "Message type wrong", {}])
@@ -55,7 +55,7 @@ defmodule MessageParsing.ValidatorTest do
   end
 
   test "should return error on unknown action" do
-    assert {:error, :schema_read_error} =
+    assert {:error, :unhandled_action, _} =
              MessageParsing.Validator.parse(
                "v16",
                ~s([2, "123", "../../../", {}])
