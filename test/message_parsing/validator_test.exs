@@ -62,4 +62,32 @@ defmodule MessageParsing.ValidatorTest do
                ~s([2, "123", "../../../", {}])
              )
   end
+
+  test "should convert response to JSON string" do
+    assert Validator.unparse("v16", %RequestResponse{
+             type_id: 3,
+             message_id: "123",
+             action: "Authorize",
+             payload: %{"idTagInfo" => %{"status" => "Accepted"}}
+           }) == {:ok, ~s([3,"123","Authorize",{"idTagInfo":{"status":"Accepted"}}])}
+  end
+
+  test "should convert request to JSON string" do
+    assert Validator.unparse("v16", %RequestResponse{
+             type_id: 2,
+             message_id: "123",
+             action: "Authorize",
+             payload: %{"idTag" => "abc"}
+           }) == {:ok, ~s([2,"123","Authorize",{"idTag":"abc"}])}
+  end
+
+  test "should convert error response to JSON string" do
+    assert Validator.unparse("v16", %ErrorResponse{
+             error_code: "UnknownMessageType",
+             error_description: "Message type wrong",
+             error_details: %{},
+             type_id: 4,
+             message_id: "123"
+           }) == {:ok, ~s([4,"123","UnknownMessageType","Message type wrong",{}])}
+  end
 end

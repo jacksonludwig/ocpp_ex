@@ -5,10 +5,13 @@ defmodule MessageParsing.Validator do
   alias MessageParsing.{SchemaReader, SchemaValidation, JSONParser, OCPPMessage}
   alias OCPPMessage.{RequestResponse, ErrorResponse}
 
+  import OCPPMessage, only: [is_OCPP_message: 1]
+
   @doc """
   Parse a string into an OCPP message struct.
   """
-  @spec parse(String.t(), String.t()) :: {:ok, OCPPMessage.any_OCPP_message()} | Utils.error_tuple()
+  @spec parse(String.t(), String.t()) ::
+          {:ok, OCPPMessage.any_OCPP_message()} | Utils.error_tuple()
   def parse(protocol, input) do
     with :ok <- validate_message_protocol(protocol),
          {:ok, decoded_input} <- JSONParser.decode(input),
@@ -18,6 +21,32 @@ defmodule MessageParsing.Validator do
          :ok <- validate_payload(protocol, ocpp_message) do
       {:ok, ocpp_message}
     end
+  end
+
+  @doc """
+  Convert an OCPP message struct to a JSON string.
+  """
+  @spec unparse(String.t(), struct()) :: {:ok, String.t()} | Utils.error_tuple()
+  def unparse(protocol, input) when is_OCPP_message(input) do
+    with :ok <- validate_message_protocol(protocol),
+         :ok <- validate_message_action(protocol, input),
+         :ok <- validate_payload(protocol, input) do
+      unparse_struct(input)
+    end
+  end
+
+  defp unparse_struct(input = %RequestResponse{}) do
+    JSONParser.encode([input.type_id, input.message_id, input.action, input.payload])
+  end
+
+  defp unparse_struct(input = %ErrorResponse{}) do
+    JSONParser.encode([
+      input.type_id,
+      input.message_id,
+      input.error_code,
+      input.error_description,
+      input.error_details
+    ])
   end
 
   @doc """
@@ -43,7 +72,8 @@ defmodule MessageParsing.Validator do
   @doc """
   Validate the message action
   """
-  @spec validate_message_action(String.t(), OCPPMessage.any_OCPP_message()) :: :ok | Utils.error_tuple()
+  @spec validate_message_action(String.t(), OCPPMessage.any_OCPP_message()) ::
+          :ok | Utils.error_tuple()
   def validate_message_action(protocol, message = %RequestResponse{}) do
     with {:ok, schema} <- SchemaReader.get_action_schema(protocol) do
       SchemaValidation.validate(schema, message.action)

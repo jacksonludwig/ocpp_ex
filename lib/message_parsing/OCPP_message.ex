@@ -8,6 +8,13 @@ defmodule MessageParsing.OCPPMessage do
   """
   @type any_OCPP_message :: __MODULE__.RequestResponse.t() | __MODULE__.ErrorResponse.t()
 
+  @doc """
+  Matches any ocpp message struct.
+  """
+  defguard is_OCPP_message(val)
+           when is_struct(val, __MODULE__.RequestResponse) or
+                  is_struct(val, __MODULE__.ErrorResponse)
+
   defmodule RequestResponse do
     @moduledoc """
     Regular OCPP message struct.
