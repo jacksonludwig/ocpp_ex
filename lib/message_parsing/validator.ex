@@ -4,26 +4,23 @@ defmodule MessageParsing.Validator do
   """
   alias MessageParsing.{OCPPErrorMessage, OCPPMessage, SchemaReader, SchemaValidation, JSONParser}
 
-  @type any_ocpp_message :: OCPPMessage.t() | OCPPErrorMessage.t()
-  @type error_tuple :: :ok | {:error, atom(), term()}
-
   @doc """
   Parse a string into an OCPP message struct.
   """
-  @spec parse(String.t(), String.t()) :: any_ocpp_message | {:error, atom(), term()}
+  @spec parse(String.t(), String.t()) :: {:ok, Utils.any_OCPP_message()} | Utils.error_tuple()
   def parse(protocol, input) do
     with {:ok, decoded_input} <- JSONParser.decode(input),
          :ok <- validate_message_structure(protocol, decoded_input),
-         ocpp_message when is_struct(ocpp_message) <- validated_message_to_struct(input),
+         ocpp_message when is_struct(ocpp_message) <- validated_message_to_struct(decoded_input),
          :ok <- validate_payload(protocol, ocpp_message) do
-      ocpp_message
+      {:ok, ocpp_message}
     end
   end
 
   @doc """
   Validate the message format
   """
-  @spec validate_message_structure(String.t(), list()) :: :ok | error_tuple
+  @spec validate_message_structure(String.t(), list()) :: :ok | Utils.error_tuple()
   def validate_message_structure(protocol, input) do
     with {:ok, schema} <- SchemaReader.get_message_schema(protocol) do
       SchemaValidation.validate(schema, input)
@@ -33,7 +30,7 @@ defmodule MessageParsing.Validator do
   @doc """
   Validate an OCPP message struct's payload.
   """
-  @spec validate_payload(String.t(), struct()) :: :ok | error_tuple
+  @spec validate_payload(String.t(), struct()) :: :ok | Utils.error_tuple()
   def validate_payload(protocol, input = %OCPPMessage{}) do
     with {:ok, schema} <- SchemaReader.get_payload_schema(protocol, input.action, input.type_id) do
       SchemaValidation.validate(schema, input.payload)

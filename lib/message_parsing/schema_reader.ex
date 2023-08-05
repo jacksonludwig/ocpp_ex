@@ -43,7 +43,7 @@ defmodule MessageParsing.SchemaReader do
              {:ok, schema_obj} <- JSONParser.decode(data),
              {:ok, resolved_schema} <- SchemaValidation.resolve_schema(schema_obj) do
           SchemaStoreServer.set({protocol, -1}, resolved_schema)
-          resolved_schema
+          {:ok, resolved_schema}
         end
 
       resolved_schema ->
@@ -57,7 +57,7 @@ defmodule MessageParsing.SchemaReader do
   ex - get_schema("v16", "BootNotification", 2) returns the schema for the BootNotification
   request payload.
   """
-  @spec get_payload_schema(String.t(), String.t(), 2 | 3) :: {:error, atom(), term()} | {:ok, term()}
+  @spec get_payload_schema(String.t(), String.t(), 2 | 3) :: {:ok, term()} | Utils.error_tuple()
   def get_payload_schema(protocol, action, type_id) do
     case SchemaStoreServer.get({action, type_id}) do
       nil ->
@@ -65,7 +65,7 @@ defmodule MessageParsing.SchemaReader do
              {:ok, schema_obj} <- JSONParser.decode(data),
              {:ok, resolved_schema} <- SchemaValidation.resolve_schema(schema_obj) do
           SchemaStoreServer.set({action, type_id}, resolved_schema)
-          resolved_schema
+          {:ok, resolved_schema}
         end
 
       resolved_schema ->
