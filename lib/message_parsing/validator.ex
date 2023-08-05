@@ -20,17 +20,13 @@ defmodule MessageParsing.Validator do
   end
 
   @doc """
-  Validate the message action
+  Validate the given message protocol
   """
-  @spec validate_message_action(String.t(), Utils.any_OCPP_message()) :: :ok | Utils.error_tuple()
-  def validate_message_action(protocol, message = %OCPPMessage{}) do
-    with {:ok, schema} <- SchemaReader.get_action_schema(protocol) do
-      SchemaValidation.validate(schema, message.action)
+  @spec validate_message_protocol(term()) :: :ok | Utils.error_tuple()
+  def validate_message_protocol(proto) do
+    with {:ok, schema} <- SchemaReader.get_meta_schema(:protocol_type) do
+      SchemaValidation.validate(schema, proto)
     end
-  end
-
-  def validate_message_action(_protocol, _ = %OCPPErrorMessage{}) do
-    :ok
   end
 
   @doc """
@@ -44,13 +40,17 @@ defmodule MessageParsing.Validator do
   end
 
   @doc """
-  Validate the given message protocol
+  Validate the message action
   """
-  @spec validate_message_protocol(term()) :: :ok | Utils.error_tuple()
-  def validate_message_protocol(proto) do
-    with {:ok, schema} <- SchemaReader.get_meta_schema(:protocol_type) do
-      SchemaValidation.validate(schema, proto)
+  @spec validate_message_action(String.t(), Utils.any_OCPP_message()) :: :ok | Utils.error_tuple()
+  def validate_message_action(protocol, message = %OCPPMessage{}) do
+    with {:ok, schema} <- SchemaReader.get_action_schema(protocol) do
+      SchemaValidation.validate(schema, message.action)
     end
+  end
+
+  def validate_message_action(_protocol, _ = %OCPPErrorMessage{}) do
+    :ok
   end
 
   @doc """
@@ -67,7 +67,11 @@ defmodule MessageParsing.Validator do
     :ok
   end
 
-  defp validated_message_to_struct([4, message_id, code, description, details]) do
+  @doc """
+  Convert previously validated list to an OCPP message struct
+  """
+  @spec validated_message_to_struct(term()) :: struct()
+  def validated_message_to_struct([4, message_id, code, description, details]) do
     %OCPPErrorMessage{
       error_code: code,
       error_description: description,
@@ -77,7 +81,7 @@ defmodule MessageParsing.Validator do
     }
   end
 
-  defp validated_message_to_struct([type_id, message_id, action, payload])
+  def validated_message_to_struct([type_id, message_id, action, payload])
        when type_id == 3 or type_id == 2 do
     %OCPPMessage{
       type_id: type_id,
@@ -87,7 +91,7 @@ defmodule MessageParsing.Validator do
     }
   end
 
-  defp validated_message_to_struct(_value) do
+  def validated_message_to_struct(_value) do
     {:error, :unknown_structure,
      "ocpp message was validated but could not be serialized into a struct"}
   end
