@@ -2,8 +2,9 @@ defmodule MessageStream.EventLogger do
   @moduledoc """
   Logs events that enter the event bus
   """
-  alias MessageStream.EventBus
   use GenServer
+
+  alias MessageStream.EventBus
 
   require Logger
 

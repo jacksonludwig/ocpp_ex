@@ -3,8 +3,9 @@ defmodule MessageStream.EventBus do
   Broker for events. Contains functions for listening for events and for broadcasting
   events to all listeners.
   """
-  alias MessageParsing.OCPPMessage
   use GenServer
+
+  alias MessageParsing.OCPPMessage
 
   @registry_process_name :"#{__MODULE__}Registry"
   @type listener_key :: :from_cs | :to_cs
