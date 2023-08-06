@@ -15,7 +15,8 @@ defmodule OcppEx.MixProject do
   def application do
     [
       extra_applications: [:logger, :observer, :wx],
-      mod: {OcppEx, []}
+      mod: {OcppEx, []},
+      env: [central_system_url: "wss://ws.postman-echo.com/raw"],
     ]
   end
 

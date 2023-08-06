@@ -87,7 +87,7 @@ defmodule MessageParsing.Validator do
   @doc """
   Validate an OCPP message struct's payload.
   """
-  @spec validate_payload(String.t(), struct()) :: :ok | Utils.error_tuple()
+  @spec validate_payload(String.t(), OCPPMessage.any_OCPP_message()) :: :ok | Utils.error_tuple()
   def validate_payload(protocol, input = %RequestResponse{}) do
     with {:ok, schema} <- SchemaReader.get_payload_schema(protocol, input.action, input.type_id) do
       SchemaValidation.validate(schema, input.payload)
