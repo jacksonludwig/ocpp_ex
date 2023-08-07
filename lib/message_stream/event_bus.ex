@@ -8,7 +8,7 @@ defmodule MessageStream.EventBus do
   alias MessageParsing.OCPPMessage
 
   @registry_process_name :"#{__MODULE__}Registry"
-  @type listener_key :: :from_cs | :to_cs
+  @type listener_topic :: :from_cs | :to_cs
   @topics [:from_cs, :to_cs]
 
   # Client
@@ -20,8 +20,8 @@ defmodule MessageStream.EventBus do
   @doc """
   Returns all of the topics in the event bus
   """
-  @spec get_keys() :: list(listener_key())
-  def get_keys() do
+  @spec get_topics() :: list(listener_topic())
+  def get_topics() do
     @topics
   end
 
@@ -31,19 +31,19 @@ defmodule MessageStream.EventBus do
   Whenever a new message enters the topic, it will be broadcasted to the `handle_info` function
   in the calling process.
   """
-  @spec listen_for(listener_key()) :: :ok
-  def listen_for(key) do
-    {:ok, _pid} = Registry.register(@registry_process_name, key, [])
+  @spec listen_for(listener_topic()) :: :ok
+  def listen_for(topic) do
+    {:ok, _pid} = Registry.register(@registry_process_name, topic, [])
     :ok
   end
 
   @doc """
-  Broadcast a message to all listeners of the given key.
+  Broadcast a message to all listeners of the given topic.
   """
-  @spec broadcast(listener_key(), OCPPMessage.any_OCPP_message()) :: :ok
-  def broadcast(key, message) do
-    true = Enum.member?(@topics, key)
-    GenServer.call(__MODULE__, {:broadcast_message, key, message})
+  @spec broadcast(listener_topic(), OCPPMessage.any_OCPP_message()) :: :ok
+  def broadcast(topic, message) do
+    true = Enum.member?(@topics, topic)
+    GenServer.call(__MODULE__, {:broadcast_message, topic, message})
   end
 
   # Server
@@ -55,9 +55,9 @@ defmodule MessageStream.EventBus do
   end
 
   @impl true
-  def handle_call({:broadcast_message, key, data}, _from, state) do
-    Registry.dispatch(@registry_process_name, key, fn entries ->
-      for {pid, _} <- entries, do: send(pid, {:broadcasted_message, key, data})
+  def handle_call({:broadcast_message, topic, data}, _from, state) do
+    Registry.dispatch(@registry_process_name, topic, fn entries ->
+      for {pid, _} <- entries, do: send(pid, {:broadcasted_message, topic, data})
     end)
 
     {:reply, :ok, state}

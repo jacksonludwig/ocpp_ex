@@ -18,13 +18,13 @@ defmodule MessageStream.EventLogger do
 
   @impl true
   def init(state) do
-    EventBus.get_keys() |> Enum.each(&EventBus.listen_for/1)
+    EventBus.get_topics() |> Enum.each(&EventBus.listen_for/1)
     {:ok, state}
   end
 
   @impl true
-  def handle_info({:broadcasted_message, key, data}, state) do
-    Logger.info(decription: "message received", topic: key, data: data)
+  def handle_info({:broadcasted_message, topic, data}, state) do
+    Logger.info(decription: "message received", topic: topic, data: data)
     {:noreply, state}
   end
 end
