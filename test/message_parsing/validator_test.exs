@@ -28,7 +28,8 @@ defmodule MessageParsing.ValidatorTest do
             }} =
              Validator.parse(
                "v16",
-               ~s([3, "123", "Authorize", { "idTagInfo": {"status": "Accepted"} }])
+               ~s([3, "123", { "idTagInfo": {"status": "Accepted"} }]),
+               "Authorize"
              )
   end
 
@@ -69,7 +70,7 @@ defmodule MessageParsing.ValidatorTest do
              message_id: "123",
              action: "Authorize",
              payload: %{"idTagInfo" => %{"status" => "Accepted"}}
-           }) == {:ok, ~s([3,"123","Authorize",{"idTagInfo":{"status":"Accepted"}}])}
+           }) == {:ok, ~s([3,"123",{"idTagInfo":{"status":"Accepted"}}])}
   end
 
   test "should convert request to JSON string" do

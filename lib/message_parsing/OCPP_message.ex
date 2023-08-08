@@ -27,6 +27,9 @@ defmodule MessageParsing.OCPPMessage do
   defmodule RequestResponse do
     @moduledoc """
     Regular OCPP message struct.
+
+    For responses, the `action` field is NOT present in the specification. They are included in the
+    struct for validation purposes.
     """
     use TypedStruct
 

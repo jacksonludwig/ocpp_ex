@@ -9,14 +9,18 @@ defmodule MessageParsing.Validator do
 
   @doc """
   Parse a string into an OCPP message struct.
+
+  The `action` parameter is only needed when validating a response, since the `action` will
+  not be present in string in that case.
   """
-  @spec parse(String.t(), String.t()) ::
+  @spec parse(String.t(), String.t(), String.t() | nil) ::
           {:ok, OCPPMessage.any_OCPP_message()} | Utils.error_tuple()
-  def parse(protocol, input) do
+  def parse(protocol, input, action \\ nil) do
     with :ok <- validate_message_protocol(protocol),
          {:ok, decoded_input} <- JSONParser.decode(input),
          :ok <- validate_message_structure(decoded_input),
-         ocpp_message when is_struct(ocpp_message) <- validated_message_to_struct(decoded_input),
+         ocpp_message when is_struct(ocpp_message) <-
+           validated_message_to_struct(decoded_input, action),
          :ok <- validate_message_action(protocol, ocpp_message),
          :ok <- validate_payload(protocol, ocpp_message) do
       {:ok, ocpp_message}
@@ -35,8 +39,12 @@ defmodule MessageParsing.Validator do
     end
   end
 
-  defp unparse_struct(input = %RequestResponse{}) do
+  defp unparse_struct(input = %RequestResponse{}) when input.type_id == 2 do
     JSONParser.encode([input.type_id, input.message_id, input.action, input.payload])
+  end
+
+  defp unparse_struct(input = %RequestResponse{}) when input.type_id == 3 do
+    JSONParser.encode([input.type_id, input.message_id, input.payload])
   end
 
   defp unparse_struct(input = %ErrorResponse{}) do
@@ -94,35 +102,46 @@ defmodule MessageParsing.Validator do
     end
   end
 
-  def validate_payload(_, _ = %ErrorResponse{}) do
+  def validate_payload(_protocol, _input = %ErrorResponse{}) do
     :ok
   end
 
   @doc """
   Convert previously validated list to an OCPP message struct
+
+  `action` is only needed for response messages.
   """
-  @spec validated_message_to_struct(term()) :: struct()
-  def validated_message_to_struct([4, message_id, code, description, details]) do
+  @spec validated_message_to_struct(list(), String.t() | nil) ::
+          OCPPMessage.any_OCPP_message() | Utils.error_tuple()
+  def validated_message_to_struct([4, message_id, code, description, details], _action) do
     %ErrorResponse{
       error_code: code,
       error_description: description,
-      error_details: details,
       type_id: 4,
-      message_id: message_id
+      message_id: message_id,
+      error_details: details
     }
   end
 
-  def validated_message_to_struct([type_id, message_id, action, payload])
-      when type_id == 3 or type_id == 2 do
+  def validated_message_to_struct([2, message_id, action, payload], _action) do
     %RequestResponse{
-      type_id: type_id,
+      type_id: 2,
       message_id: message_id,
       action: action,
       payload: payload
     }
   end
 
-  def validated_message_to_struct(_value) do
+  def validated_message_to_struct([3, message_id, payload], action) do
+    %RequestResponse{
+      type_id: 3,
+      message_id: message_id,
+      action: action,
+      payload: payload
+    }
+  end
+
+  def validated_message_to_struct(_parsed_message, _action) do
     {:error, :unknown_structure,
      "ocpp message was validated but could not be serialized into a struct"}
   end
