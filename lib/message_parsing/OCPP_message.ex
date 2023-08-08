@@ -15,6 +15,15 @@ defmodule MessageParsing.OCPPMessage do
            when is_struct(val, __MODULE__.RequestResponse) or
                   is_struct(val, __MODULE__.ErrorResponse)
 
+  @doc """
+  Returns true if the OCPP message is a request or a response.
+  Returns false if the message is an error response.
+  """
+  @spec is_request_response?(any_OCPP_message()) :: boolean()
+  def is_request_response?(val) do
+    val.type_id != 4
+  end
+
   defmodule RequestResponse do
     @moduledoc """
     Regular OCPP message struct.
