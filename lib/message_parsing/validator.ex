@@ -113,16 +113,6 @@ defmodule MessageParsing.Validator do
   """
   @spec validated_message_to_struct(list(), String.t() | nil) ::
           OCPPMessage.any_OCPP_message() | Utils.error_tuple()
-  def validated_message_to_struct([4, message_id, code, description, details], _action) do
-    %ErrorResponse{
-      error_code: code,
-      error_description: description,
-      type_id: 4,
-      message_id: message_id,
-      error_details: details
-    }
-  end
-
   def validated_message_to_struct([2, message_id, action, payload], _action) do
     %RequestResponse{
       type_id: 2,
@@ -138,6 +128,16 @@ defmodule MessageParsing.Validator do
       message_id: message_id,
       action: action,
       payload: payload
+    }
+  end
+
+  def validated_message_to_struct([4, message_id, code, description, details], _action) do
+    %ErrorResponse{
+      type_id: 4,
+      message_id: message_id,
+      error_code: code,
+      error_description: description,
+      error_details: details
     }
   end
 
