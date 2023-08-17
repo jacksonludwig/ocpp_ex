@@ -2,8 +2,10 @@ defmodule MessageHandling.ChargePoint do
   @moduledoc """
   This process handles responding to requests from the central system.
   """
-  alias MessageStream.EventBus
   use GenServer
+
+  alias MessageParsing.OCPPMessage.RequestResponse
+  alias MessageStream.EventBus
 
   # TODO: actually handle messages
   # TODO: store state here or in other process?
@@ -24,8 +26,8 @@ defmodule MessageHandling.ChargePoint do
 
   @impl true
   def handle_info({:broadcasted_message, :from_cs, data}, state) do
-    if is_struct(data, %RequestResponse{}) do
-      handle_cs_call(data.action, data)
+    if is_struct(data, RequestResponse) do
+      handle_cs_call(data)
     end
 
     {:noreply, state}
