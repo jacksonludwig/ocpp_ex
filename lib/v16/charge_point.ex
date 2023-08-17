@@ -4,7 +4,7 @@ defmodule MessageHandling.ChargePoint do
   """
   use GenServer
 
-  alias MessageParsing.OCPPMessage.RequestResponse
+  alias MessageParsing.OCPPMessage.{RequestResponse, ErrorResponse}
   alias MessageStream.EventBus
 
   # TODO: actually handle messages
@@ -26,14 +26,20 @@ defmodule MessageHandling.ChargePoint do
 
   @impl true
   def handle_info({:broadcasted_message, :from_cs, data}, state) do
-    if is_struct(data, RequestResponse) do
-      handle_cs_call(data)
-    end
+    handle_cs_call(data)
 
     {:noreply, state}
   end
 
   # Message Handling
+
+  def handle_cs_call(msg = %RequestResponse{}) when msg.type_id == 3 do
+    # ignore responses
+  end
+
+  def handle_cs_call(_msg = %ErrorResponse{}) do
+    # ignore error responses
+  end
 
   def handle_cs_call(msg = %RequestResponse{}) when msg.action == "RemoteStartTransaction" do
     # 1. send remote start conf
@@ -48,7 +54,7 @@ defmodule MessageHandling.ChargePoint do
     # 1. send configuration
   end
 
-  def handle_cs_call(msg) do
+  def handle_cs_call(msg = %RequestResponse{}) do
     {:error, :unknown_call_from_cs, msg.action}
   end
 end
