@@ -27,7 +27,7 @@ defmodule MessageHandling.ChargePoint do
   @impl true
   def handle_info({:broadcasted_message, :from_cs, data}, state) do
     case data do
-      msg = %RequestResponse{} when msg.type_id == 2 -> handle_cs_call(data.action, data)
+      msg = %RequestResponse{} when msg.type_id == 2 -> handle_cs_call(msg.action, msg)
       msg -> handle_unexpected_message(msg)
     end
 

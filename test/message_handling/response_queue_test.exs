@@ -1,5 +1,5 @@
 defmodule MessageHandling.ResponseQueueTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case
 
   alias MessageHandling.ResponseQueue
   alias MessageParsing.OCPPMessage

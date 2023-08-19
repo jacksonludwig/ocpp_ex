@@ -5,6 +5,7 @@ defmodule MessageHandling.ResponseQueue do
   use GenServer
 
   alias MessageParsing.OCPPMessage
+
   import OCPPMessage, only: [is_OCPP_message: 1]
 
   # Client
