@@ -42,25 +42,29 @@ defmodule MessageHandling.RequestToCs do
     end)
   end
 
-  defp poll_for_response(message_id, opts = %__MODULE__{}, current_poll_time) do
+  defp poll_for_response(message_id, opts, current_poll_time)
+       when current_poll_time < opts.response_poll_timeout do
     Process.sleep(opts.response_poll_interval)
 
     case ResponseQueue.dequeue() do
       message when message.message_id == message_id -> message
-      _ when current_poll_time >= opts.response_poll_timeout -> nil
       _ -> poll_for_response(message_id, opts, current_poll_time + opts.response_poll_interval)
     end
   end
 
-  defp send_message(message, attempt_count, opts = %__MODULE__{}) do
+  defp poll_for_response(_message_id, _opts, _current_poll_time) do
+    nil
+  end
+
+  defp send_message(message, attempt_count, opts) when attempt_count < opts.max_send_attempts do
     EventBus.broadcast(:to_cs, message)
 
     Process.sleep(attempt_count * opts.resend_interval)
 
-    if attempt_count >= opts.max_send_attempts do
-      nil
-    else
-      send_message(message, opts.max_send_attempts + 1, opts)
-    end
+    send_message(message, opts.max_send_attempts + 1, opts)
+  end
+
+  defp send_message(_message, _attempt_count, _opts) do
+    nil
   end
 end
