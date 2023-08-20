@@ -22,10 +22,23 @@ defmodule V16.Configuration do
     GenServer.start_link(__MODULE__, configuration, name: __MODULE__)
   end
 
+  @doc """
+  Get the current state of the charging station.
+  """
+  @spec get_state() :: V16.ConfigurationState.t()
+  def get_state() do
+    GenServer.call(__MODULE__, :get_state)
+  end
+
   # Server
 
   @impl true
   def init(state) do
     {:ok, state}
+  end
+
+  @impl true
+  def handle_call(:get_state, _from, state) do
+    {:reply, state, state}
   end
 end

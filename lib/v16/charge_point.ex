@@ -4,11 +4,10 @@ defmodule V16.ChargePoint do
   """
   use GenServer
 
+  alias MessageHandling.MessageToCs
   alias MessageParsing.OCPPMessage.RequestResponse
   alias MessageStream.EventBus
-
-  # TODO: actually handle messages
-  # TODO: store state here or in other process?
+  alias V16.Configuration
 
   # Client
 
@@ -36,17 +35,18 @@ defmodule V16.ChargePoint do
 
   # Message Handling
 
-  def handle_cs_call("RemoteStartTransaction", msg = %RequestResponse{}) do
-    # 1. send remote start conf
-    # 2. start transaction flow
-  end
-
-  def handle_cs_call("TriggerMessage", msg = %RequestResponse{}) do
-    # 1. send connector status
-  end
-
   def handle_cs_call("GetConfiguration", msg = %RequestResponse{}) do
-    # 1. send configuration
+    station_state = Configuration.get_state()
+
+    MessageToCs.response(%RequestResponse{
+      type_id: 3,
+      action: msg.action,
+      payload: %{
+        chargePointVendor: station_state.charge_point_vendor,
+        chargePointModel: station_state.charge_point_model
+      },
+      message_id: msg.message_id
+    })
   end
 
   def handle_cs_call(_action, msg) do

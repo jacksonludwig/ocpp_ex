@@ -12,23 +12,27 @@ defmodule MessageHandling.RequestToCsOptions do
   end
 end
 
-defmodule MessageHandling.RequestToCs do
+defmodule MessageHandling.MessageToCs do
   @moduledoc """
-  Handles requests initiated by the charge point to the central system.
-  The behavior emulates a synchronous request-response flow; the charge point waits for
-  a response to the request and times out otherwise.
-
-  The charge point MUST NOT send additional requests until the current one is resolved.
+  Functions for sending messages to the central system.
   """
-  alias MessageHandling.ResponseQueue
   alias MessageStream.EventBus
   alias MessageParsing.OCPPMessage
+  alias MessageHandling.ResponseQueue
+
+  @doc """
+  Send a response to the central system.
+  """
+  @spec response(OCPPMessage.any_OCPP_message()) :: :ok
+  def response(message) do
+    EventBus.broadcast(:to_cs, message)
+  end
 
   @doc """
   Create an async task that makes a request to the central system and awaits for a response.
-  When the response is received, `on_response` is executed.
 
-  The awaited response will be either `nil` or an `OCPPMessage`.
+  `Task.await` must be called on the result. The awaited response will be either `nil` or
+   an `OCPPMessage`.
   """
   @spec request(OCPPMessage.any_OCPP_message(), MessageHandling.RequestToCsOptions.t()) ::
           Task.t()
