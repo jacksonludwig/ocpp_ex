@@ -1,4 +1,4 @@
-defmodule MessageHandling.ChargePoint do
+defmodule V16.ChargePoint do
   @moduledoc """
   This process handles responding to requests from the central system.
   """

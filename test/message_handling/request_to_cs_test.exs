@@ -1,7 +1,7 @@
 defmodule MessageHandling.RequestToCsTest do
   use ExUnit.Case
 
-  alias MessageHandling.{ResponseQueue, RequestToCs}
+  alias MessageHandling.{ResponseQueue, RequestToCs, RequestToCsOptions}
   alias MessageParsing.OCPPMessage
 
   setup do
@@ -42,7 +42,7 @@ defmodule MessageHandling.RequestToCsTest do
   @tag capture_log: true
   test "should timeout while waiting for response", %{request: request} do
     request_task =
-      RequestToCs.request(request, %RequestToCs{
+      RequestToCs.request(request, %RequestToCsOptions{
         response_poll_timeout: 0
       })
 
@@ -54,7 +54,7 @@ defmodule MessageHandling.RequestToCsTest do
     ResponseQueue.enqueue(response)
 
     request_task =
-      RequestToCs.request(request, %RequestToCs{
+      RequestToCs.request(request, %RequestToCsOptions{
         response_poll_timeout: 0
       })
 

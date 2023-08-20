@@ -7,7 +7,13 @@ defmodule OcppEx do
       MessageParsing.SchemaStore,
       MessageStream.EventBus,
       MessageStream.EventLogger,
-      MessageHandling.ResponseQueue
+      MessageHandling.ResponseQueue,
+      {V16.Configuration,
+       %V16.ConfigurationState{
+         charge_point_model: "Example Model",
+         charge_point_vendor: "Example Vendor"
+       }},
+      V16.ChargePoint
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one, name: OcppEx.Supervisor)
