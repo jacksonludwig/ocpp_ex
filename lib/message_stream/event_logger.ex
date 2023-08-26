@@ -24,7 +24,7 @@ defmodule MessageStream.EventLogger do
 
   @impl true
   def handle_info({:broadcasted_message, topic, data}, state) do
-    Logger.info(decription: "message received", topic: topic, data: data)
+    Logger.info(description: "message received", topic: topic, data: data)
     {:noreply, state}
   end
 end
